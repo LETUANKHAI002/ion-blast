@@ -403,7 +403,7 @@ function useHint() {
   }
 }
 
-// ===== TÍNH NĂNG ĐỔI KHỐI ĐỀ XUẤT (REROLL - 🔄) =====
+// ===== TÍNH NĂNG ĐỔI KHỐI ĐỀ XUẤT (REROLL) =====
 function useReroll() {
   if (state.lockInput) return;
   if (state.rerollsLeft <= 0) return;
