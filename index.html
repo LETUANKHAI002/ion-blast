@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ion Blast — Digital Chemistry Lab</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Background hạt động -->
+<div id="particle-bg"></div>
+
+<div id="app">
+
+  <!-- ===== MÀN HÌNH CHỌN ĐỘ KHÓ & MENU ===== -->
+  <section id="screen-menu" class="screen active">
+    <div class="menu-inner">
+      <h1 class="logo">
+        <span class="logo-ion">Ion</span><span class="logo-blast">Blast</span>
+      </h1>
+      <p class="tagline">Ghép ion · Tạo chất thật · Phá kỷ lục</p>
+
+      <!-- Nút Tiếp tục ván chơi (Ẩn mặc định) -->
+      <button id="btn-continue" class="primary-btn btn-continue-game hidden">
+        <span>▶ Tiếp tục ván chơi</span>
+      </button>
+
+      <div class="difficulty-grid">
+        <button class="diff-card diff-easy" data-difficulty="easy">
+          <span class="diff-label">Dễ</span>
+          <span class="diff-desc">Muối &amp; oxit vô cơ cơ bản</span>
+          <span class="diff-meta">Lưới 8×8 · 11 ion</span>
+        </button>
+        <button class="diff-card diff-medium" data-difficulty="medium">
+          <span class="diff-label">Trung bình</span>
+          <span class="diff-desc">Acid · Bazơ · Muối phức tạp</span>
+          <span class="diff-meta">Lưới 8×8 · 21 ion</span>
+        </button>
+        <button class="diff-card diff-hard" data-difficulty="hard">
+          <span class="diff-label">Khó</span>
+          <span class="diff-desc">Mở rộng sang hóa hữu cơ</span>
+          <span class="diff-meta">Lưới 9×9 · 27 ion</span>
+        </button>
+      </div>
+
+      <!-- Action phụ ở Menu -->
+      <div class="menu-actions">
+        <button id="btn-compendium" class="ghost-btn">📖 Sổ hợp chất</button>
+        <button id="btn-menu-tutorial" class="ghost-btn">❓ Hướng dẫn</button>
+        <button id="btn-menu-settings" class="ghost-btn">⚙️ Cài đặt</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MÀN HÌNH CHƠI ===== -->
+  <section id="screen-game" class="screen">
+    <header class="game-hud">
+      <button id="btn-back" class="icon-btn" title="Về menu">←</button>
+      <div class="hud-score">
+        <span class="hud-score-label">Điểm</span>
+        <span id="score-value">0</span>
+      </div>
+      <div id="streak-badge" class="hud-streak hidden">
+        <span id="streak-value">x1</span> Streak
+      </div>
+      <button id="btn-hint" class="icon-btn hint-btn" title="Gợi ý">
+        💡 <span id="hint-count">3</span>
+      </button>
+      <button id="btn-reroll" class="icon-btn hint-btn" title="Đổi khối">
+        🔄 <span id="reroll-count">3</span>
+      </button>
+    </header>
+
+    <div id="reaction-toast" class="reaction-toast hidden"></div>
+
+    <main class="game-board-wrap">
+      <div id="grid" class="grid"></div>
+    </main>
+
+    <footer class="tray-wrap">
+      <div id="tray" class="tray"></div>
+    </footer>
+  </section>
+
+  <!-- ===== MÀN HÌNH GAME OVER ===== -->
+  <section id="screen-gameover" class="screen">
+    <div class="gameover-inner">
+      <h2>Hết nước đi!</h2>
+      <p class="gameover-sub">Không còn ô trống phù hợp cho các khối hiện tại.</p>
+      <div class="gameover-score">
+        <span class="gameover-score-label">Điểm số</span>
+        <span id="final-score">0</span>
+      </div>
+      <div class="gameover-best">Kỷ lục (<span id="final-difficulty-label"></span>): <span id="best-score">0</span></div>
+      <button id="btn-restart" class="primary-btn">Chơi lại</button>
+      <button id="btn-menu" class="ghost-btn">Về menu</button>
+    </div>
+  </section>
+
+  <!-- ===== SỔ HỢP CHẤT (COMPENDIUM) ===== -->
+  <section id="screen-compendium" class="screen">
+    <header class="compendium-header">
+      <button id="btn-compendium-back" class="icon-btn" title="Quay lại">←</button>
+      <h2>Hợp chất đã khám phá</h2>
+    </header>
+    <div id="compendium-list" class="compendium-list"></div>
+  </section>
+
+  <!-- ===== MÀN HÌNH HƯỚNG DẪN CHƠI (TUTORIAL) ===== -->
+  <section id="screen-tutorial" class="screen">
+    <header class="compendium-header">
+      <button id="btn-tutorial-back" class="icon-btn" title="Quay lại">←</button>
+      <h2>Hướng dẫn chơi</h2>
+    </header>
+    <div class="tutorial-list">
+      <div class="tutorial-item">
+        <div class="tut-num">1</div>
+        <div class="tut-content">
+          <h3>Kéo &amp; Đặt Khối</h3>
+          <p>Kéo các khối ion từ khay dưới màn hình và thả vào các ô trống trên lưới phản ứng.</p>
+        </div>
+      </div>
+      <div class="tutorial-item">
+        <div class="tut-num">2</div>
+        <div class="tut-content">
+          <h3>Tạo Chất Đúng Hóa Học</h3>
+          <p>Các ion xếp cạnh nhau (ngang/dọc) tạo thành hợp chất hóa học có thật và trung hòa điện tích sẽ lập tức <strong>phản ứng và phát nổ</strong>.</p>
+        </div>
+      </div>
+      <div class="tutorial-item">
+        <div class="tut-num">3</div>
+        <div class="tut-content">
+          <h3>Dọn Hàng Cứu Nguy</h3>
+          <p>Xếp đầy 1 hàng hoặc cột mà không tạo phản ứng sẽ dọn hàng đó (giống Block Blast gốc). Điểm dọn hàng thấp hơn phản ứng hóa học.</p>
+        </div>
+      </div>
+      <div class="tutorial-item">
+        <div class="tut-num">4</div>
+        <div class="tut-content">
+          <h3>Streak &amp; Combo</h3>
+          <p>Ghép phản ứng liên tiếp qua từng lượt để tăng <strong>Hệ số nhân Streak (tối đa x3.0)</strong>. Tạo nhiều phản ứng cùng lượt để nhận thêm điểm <strong>Combo</strong>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MÀN HÌNH CÀI ĐẶT (SETTINGS) ===== -->
+  <section id="screen-settings" class="screen">
+    <header class="compendium-header">
+      <button id="btn-settings-back" class="icon-btn" title="Quay lại">←</button>
+      <h2>Cài đặt</h2>
+    </header>
+    <div class="settings-body">
+      <div class="setting-card">
+        <h3>Âm thanh phòng thí nghiệm</h3>
+        <div class="setting-row">
+          <span>Nhạc nền (BGM Synth)</span>
+          <label class="switch-toggle">
+            <input type="checkbox" id="chk-music" checked>
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <span>Hiệu ứng âm thanh (SFX)</span>
+          <label class="switch-toggle">
+            <input type="checkbox" id="chk-sound" checked>
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="setting-card warning-card">
+        <h3>Vùng nguy hiểm</h3>
+        <p class="warning-text">Xóa toàn bộ dữ liệu lưu trữ gồm điểm kỷ lục và danh sách hợp chất đã khám phá.</p>
+        <button id="btn-reset-data" class="danger-btn">Xóa toàn bộ dữ liệu</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ===== MODAL CHI TIẾT HỢP CHẤT (COMPOUND DETAIL) ===== -->
+<div id="modal-compound-detail" class="modal-overlay hidden">
+  <div class="modal-content">
+    <button id="btn-close-detail" class="modal-close-btn">&times;</button>
+    <div class="detail-header">
+      <span id="detail-formula" class="detail-formula">Formula</span>
+      <span id="detail-category" class="detail-category-tag">Category</span>
+    </div>
+    <h3 id="detail-name" class="detail-name">Compound Name</h3>
+    <hr class="detail-divider">
+    <div class="detail-section">
+      <h4>Công thức ion:</h4>
+      <div id="detail-ions" class="detail-ions-list"></div>
+    </div>
+    <div class="detail-section">
+      <h4>Fun Fact (Kiến thức):</h4>
+      <p id="detail-fact" class="detail-fact-text">Interesting facts here...</p>
+    </div>
+  </div>
+</div>
+
+<!-- Drag ghost element dùng chung cho kéo-thả -->
+<div id="drag-ghost" class="drag-ghost hidden"></div>
+
+<script src="audio.js"></script>
+<script src="ions.js"></script>
+<script src="compounds.js"></script>
+<script src="gridEngine.js"></script>
+<script src="reactionEngine.js"></script>
+<script src="pieceGenerator.js"></script>
+<script src="scoreEngine.js"></script>
+<script src="ui.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
